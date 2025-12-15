@@ -15,8 +15,13 @@ jobs:
       with:
         node-version: 18
 
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
     - name: Install Power Platform CLI
-      run: npm install -g @microsoft/powerplatform-cli
+      run: dotnet tool install --global Microsoft.PowerPlatform.CLI
 
     - name: Install dependencies
       run: npm install
