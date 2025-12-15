@@ -15,45 +15,43 @@ jobs:
       with:
         node-version: 18
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-
-    - name: Install Power Platform CLI
-      run: dotnet tool install --global Microsoft.PowerPlatform.CLI
-
     - name: Install dependencies
       run: npm install
 
     - name: Build PCF
       run: npm run build
 
-    - name: Create solution structure
-      run: |
-        mkdir solution
-        cd solution
-        pac solution init --publisher-name Default --publisher-prefix def
-        mkdir src\Controls
-        xcopy ..\ src\Controls\OptionsetPCF /E /I /Y
+    # 👉 Init solution
+    - name: Init solution
+      uses: microsoft/powerplatform-actions/init-solution@v1
+      with:
+        solution-name: OptionsetPCF
+        publisher-name: Default
+        publisher-prefix: def
 
+    # 👉 Copy PCF into solution
+    - name: Copy PCF to solution
+      run: |
+        mkdir OptionsetPCF/src/Controls
+        xcopy . OptionsetPCF/src/Controls/OptionsetPCF /E /I /Y
+
+    # 👉 Add PCF reference
     - name: Add PCF reference
-      run: |
-        cd solution
-        pac solution add-reference --path src\Controls\OptionsetPCF
+      uses: microsoft/powerplatform-actions/add-solution-component@v1
+      with:
+        component-type: pcf
+        component-path: OptionsetPCF/src/Controls/OptionsetPCF
 
-    - name: Build solution
-      run: |
-        cd solution
-        pac solution build
-
+    # 👉 Pack solution
     - name: Pack solution
-      run: |
-        cd solution
-        pac solution pack --zipfile OptionsetPCF.zip --folder .
+      uses: microsoft/powerplatform-actions/pack-solution@v1
+      with:
+        solution-folder: OptionsetPCF
+        solution-file: OptionsetPCF.zip
+        solution-type: Unmanaged
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: OptionsetPCF-Solution
-        path: solution/OptionsetPCF.zip
+        path: OptionsetPCF.zip
