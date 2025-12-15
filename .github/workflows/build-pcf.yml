@@ -21,28 +21,21 @@ jobs:
     - name: Build PCF
       run: npm run build
 
-    # 👉 Init solution
-    - name: Init solution
-      uses: microsoft/powerplatform-actions/init-solution@v1
+    # ✅ Create solution (ถูกต้อง)
+    - name: Create solution
+      uses: microsoft/powerplatform-actions/create-solution@v1
       with:
         solution-name: OptionsetPCF
         publisher-name: Default
         publisher-prefix: def
 
-    # 👉 Copy PCF into solution
+    # Copy PCF into solution
     - name: Copy PCF to solution
       run: |
         mkdir OptionsetPCF/src/Controls
         xcopy . OptionsetPCF/src/Controls/OptionsetPCF /E /I /Y
 
-    # 👉 Add PCF reference
-    - name: Add PCF reference
-      uses: microsoft/powerplatform-actions/add-solution-component@v1
-      with:
-        component-type: pcf
-        component-path: OptionsetPCF/src/Controls/OptionsetPCF
-
-    # 👉 Pack solution
+    # Pack solution
     - name: Pack solution
       uses: microsoft/powerplatform-actions/pack-solution@v1
       with:
