@@ -1,0 +1,54 @@
+name: Build PCF Solution
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+
+    - name: Install Power Platform CLI
+      run: npm install -g @microsoft/powerplatform-cli
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build PCF
+      run: npm run build
+
+    - name: Create solution structure
+      run: |
+        mkdir solution
+        cd solution
+        pac solution init --publisher-name Default --publisher-prefix def
+        mkdir src\Controls
+        xcopy ..\ src\Controls\OptionsetPCF /E /I /Y
+
+    - name: Add PCF reference
+      run: |
+        cd solution
+        pac solution add-reference --path src\Controls\OptionsetPCF
+
+    - name: Build solution
+      run: |
+        cd solution
+        pac solution build
+
+    - name: Pack solution
+      run: |
+        cd solution
+        pac solution pack --zipfile OptionsetPCF.zip --folder .
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: OptionsetPCF-Solution
+        path: solution/OptionsetPCF.zip
